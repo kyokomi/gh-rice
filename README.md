@@ -16,7 +16,7 @@ Usage of ./gh-rice:
   -b string
     	github branch name
   -c string
-    	comment comment
+    	comment
   -o string
     	github owner name
   -r string

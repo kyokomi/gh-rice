@@ -11,7 +11,7 @@ import (
 
 func main() {
 	var token, comment, owner, repo, branch string
-	flag.StringVar(&comment, "c", "", "comment comment")
+	flag.StringVar(&comment, "c", "", "comment")
 	flag.StringVar(&token, "t", "", "github access token")
 	flag.StringVar(&owner, "o", "", "github owner name")
 	flag.StringVar(&repo, "r", "", "github repository name")
