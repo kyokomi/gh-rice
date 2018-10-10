@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/google/go-github/github"
@@ -37,6 +38,11 @@ func main() {
 		}
 
 		number := *r.Number
+		if isAlreadyComment(client, ctx, owner, repo, number, comment) {
+			fmt.Println("already comment")
+			return
+		}
+
 		_, _, err := client.Issues.CreateComment(ctx, owner, repo, number, &github.IssueComment{
 			Body: &comment,
 		})
@@ -44,4 +50,20 @@ func main() {
 			log.Fatalln(err)
 		}
 	}
+}
+
+func isAlreadyComment(client *github.Client, ctx context.Context, owner, repo string, number int, comment string) bool {
+	comments, _, err := client.Issues.ListComments(ctx, owner, repo, number, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for i := range comments {
+		fmt.Println(*comments[i].Body)
+		if *comments[i].Body == comment {
+			return true
+		}
+	}
+
+	return false
 }
