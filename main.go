@@ -12,11 +12,13 @@ import (
 
 func main() {
 	var token, comment, owner, repo, branch string
+	var overwrite bool
 	flag.StringVar(&comment, "c", "", "comment")
 	flag.StringVar(&token, "t", "", "github access token")
 	flag.StringVar(&owner, "o", "", "github owner name")
 	flag.StringVar(&repo, "r", "", "github repository name")
 	flag.StringVar(&branch, "b", "", "github branch name")
+	flag.BoolVar(&overwrite, "w", false, "overwrite and update if there are already comments")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -43,6 +45,37 @@ func main() {
 			return
 		}
 
+		// 上書き更新オプションがONの場合
+		if overwrite {
+			// tokenのuserIDを取得
+			u, _, err := client.Users.Get(ctx, "")
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			comments, _, err := client.Issues.ListComments(ctx, owner, repo, number, nil)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			var commentID *int64
+			for _, c := range comments {
+				if *c.User.ID == *u.ID {
+					commentID = c.ID
+				}
+			}
+
+			if commentID != nil {
+				_, _, err := client.Issues.EditComment(ctx, owner, repo, *commentID, &github.IssueComment{
+					Body: &comment,
+				})
+				if err != nil {
+					log.Fatalln(err)
+				}
+				return // 上書き更新で終わり
+			}
+		}
+
 		_, _, err := client.Issues.CreateComment(ctx, owner, repo, number, &github.IssueComment{
 			Body: &comment,
 		})
@@ -59,7 +92,6 @@ func isAlreadyComment(client *github.Client, ctx context.Context, owner, repo st
 	}
 
 	for i := range comments {
-		fmt.Println(*comments[i].Body)
 		if *comments[i].Body == comment {
 			return true
 		}
