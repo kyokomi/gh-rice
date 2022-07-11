@@ -21,6 +21,11 @@ func main() {
 	flag.BoolVar(&overwrite, "w", false, "overwrite and update if there are already comments")
 	flag.Parse()
 
+	if comment == "" {
+		fmt.Println("no comment")
+		return // コメントなしは何もしない
+	}
+
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
